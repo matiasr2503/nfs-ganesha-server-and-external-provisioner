@@ -13,6 +13,9 @@ on:
       - ".github/workflows/docker-build-test.yml"
   workflow_dispatch:
 
+env:
+  GANESHA_VERSION: 4.0.8
+
 jobs:
   build_ganesha:
     name: Build Dockerfile for ${{ matrix.platform }}
@@ -35,6 +38,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./deploy/base
+          ARGS: --build-arg GANESHA_VERSION=${GANESHA_VERSION}
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           push: false
 
@@ -62,5 +66,5 @@ jobs:
           context: .
           file: ./deploy/docker/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
-          ARGS: --build-arg GANESHA_VERSION=V4.0.8
+          ARGS: --build-arg GANESHA_VERSION=${GANESHA_VERSION}
           push: false

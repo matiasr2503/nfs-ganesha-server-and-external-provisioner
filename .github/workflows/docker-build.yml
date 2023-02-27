@@ -7,10 +7,15 @@
 name: Build nfs-ganesha base container
 
 on:
-  # Trigger only release creation
+  # Trigger when path deploy/base/Dockerfile is changed or workflow is changed
   push:
-    tags:
-      - 'V*' # Push events to matching V*, i.e. V4.0.8
+    paths:
+      - "deploy/base/Dockerfile"
+      - ".github/workflows/docker-build.yml"
+
+# environment variables
+env:
+  GANESHA_VERSION: 4.0.8
 
 jobs:
   nfs-ganesha:
@@ -22,20 +27,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
-
-      # Generate tags using github.repository_owner and github.ref, and latest tag
-      - name: Generate tags
-        id: tags
-        uses: docker/metadata-action@v4
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/nfs-ganesha
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=ref,event=tag
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}      
 
       # Action reference: https://github.com/docker/setup-qemu-action
       - name: Set up QEMU (for docker buildx)
@@ -58,6 +49,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./deploy/base
+          ARGS: --build-arg GANESHA_VERSION=${GANESHA_VERSION}
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           push: true
           # Use the tag name as the image tag and also tag it as latest
@@ -74,20 +66,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
-
-      # Generate tags using github.repository_owner and github.ref, and latest tag
-      - name: Generate tags
-        id: tags
-        uses: docker/metadata-action@v4
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/nfs-provisioner
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=ref,event=tag
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}  
 
       # Action reference: https://github.com/docker/setup-qemu-action
       - name: Set up QEMU (for docker buildx)
@@ -112,7 +90,7 @@ jobs:
           context: .
           file: ./deploy/docker/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
-          ARGS: --build-arg GANESHA_VERSION=${{ github.ref }}
+          ARGS: --build-arg GANESHA_VERSION=${GANESHA_VERSION}
           push: true
           # use metadata-action to generate tags
           tags: ${{ steps.tags.outputs.tags }}
