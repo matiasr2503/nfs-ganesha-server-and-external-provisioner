@@ -25,8 +25,7 @@ jobs:
       contents: read
       packages: write
     # environment variables to be used in the job
-    env:
-      GANESHA_VERSION: ${{ env.GANESHA_VERSION }}
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
