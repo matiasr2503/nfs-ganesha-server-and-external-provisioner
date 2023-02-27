@@ -51,21 +51,21 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./deploy/base
-          ARGS: --build-arg GANESHA_VERSION=${{ env.GANESHA_VERSION}}
+          ARGS: --build-arg GANESHA_VERSION=${{ env.GANESHA_VERSION }}
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           push: true
           # Use the GANESHA_VERSION as the tag
-          tags: ghcr.io/${{ github.repository_owner }}/nfs-ganesha:${{ env.GANESHA_VERSION}}
+          tags: ghcr.io/${{ github.repository_owner }}/nfs-ganesha:${{ env.GANESHA_VERSION }}
 
       - name: Build nfs-provisioner container
         uses: docker/build-push-action@v2
         with:
           context: ./deploy/docker
-          ARGS: --build-arg GANESHA_VERSION=${{ env.GANESHA_VERSION}}}
+          ARGS: --build-arg GANESHA_VERSION=${{ env.GANESHA_VERSION }}
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           push: true
           # Use the GANESHA_VERSION as the tag
-          tags: ghcr.io/${{ github.repository_owner }}/nfs-provisioner:${{ env.GANESHA_VERSION}}
+          tags: ghcr.io/${{ github.repository_owner }}/nfs-provisioner:${{ env.GANESHA_VERSION }}
 
   # nfs-provisioner:
   #   name: Build nfs-provisioner container
