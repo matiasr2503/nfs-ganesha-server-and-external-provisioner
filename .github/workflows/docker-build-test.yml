@@ -41,30 +41,39 @@ jobs:
           ARGS: --build-arg GANESHA_VERSION=${GANESHA_VERSION}
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           push: false
+          tags: ghcr.io/${{ github.repository_owner }}/nfs-ganesha:${GANESHA_VERSION}
 
-  # build nfs provisioner
-  build_nfs_provisioner:
-    name: Build Dockerfile for ${{ matrix.platform }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v2
-
-      # Action reference: https://github.com/docker/setup-qemu-action
-      - name: Set up QEMU (for docker buildx)
-        uses: docker/setup-qemu-action@v1
-
-      # Action reference: https://github.com/docker/setup-buildx-action
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      # Action reference: https://github.com/docker/build-push-action
-      - name: Build container
+      - name: Build nfs-provisioner container
         uses: docker/build-push-action@v2
         with:
-          context: .
-          file: ./deploy/docker/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
+          context: ./deploy/nfs-provisioner
           ARGS: --build-arg GANESHA_VERSION=${GANESHA_VERSION}
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           push: false
+
+  # # build nfs provisioner
+  # build_nfs_provisioner:
+  #   name: Build Dockerfile for ${{ matrix.platform }}
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     # Action reference: https://github.com/docker/setup-qemu-action
+  #     - name: Set up QEMU (for docker buildx)
+  #       uses: docker/setup-qemu-action@v1
+
+  #     # Action reference: https://github.com/docker/setup-buildx-action
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v1
+
+  #     # Action reference: https://github.com/docker/build-push-action
+  #     - name: Build container
+  #       uses: docker/build-push-action@v2
+  #       with:
+  #         context: .
+  #         file: ./deploy/docker/Dockerfile
+  #         platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
+  #         ARGS: --build-arg GANESHA_VERSION=${GANESHA_VERSION}
+  #         push: false
