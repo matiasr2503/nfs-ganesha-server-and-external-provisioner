@@ -30,6 +30,15 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
 
+      # use docker cache to speed up the build
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      
       # Action reference: https://github.com/docker/setup-qemu-action
       - name: Set up QEMU (for docker buildx)
         uses: docker/setup-qemu-action@v1
