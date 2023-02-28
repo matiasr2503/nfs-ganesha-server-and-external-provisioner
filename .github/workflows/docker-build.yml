@@ -19,7 +19,7 @@ env:
 
 jobs:
   nfs-ganesha:
-    name: Build nfs-ganesha base container
+    name: Build containers
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -76,43 +76,3 @@ jobs:
           push: true
           # Use the GANESHA_VERSION as the tag
           tags: ghcr.io/${{ github.repository_owner }}/nfs-provisioner:${{ env.GANESHA_VERSION }}
-
-  # nfs-provisioner:
-  #   name: Build nfs-provisioner container
-  #   # run only if nfs-ganesha job is successful
-  #   needs: nfs-ganesha
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: read
-  #     packages: write
-  #   steps:
-  #     - name: Checkout sources
-  #       uses: actions/checkout@v2
-
-  #     # Action reference: https://github.com/docker/setup-qemu-action
-  #     - name: Set up QEMU (for docker buildx)
-  #       uses: docker/setup-qemu-action@v1
-
-  #     # Action reference: https://github.com/docker/setup-buildx-action
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v1
-
-  #     # Action reference: https://github.com/docker/login-action
-  #     - name: Login to GitHub Container Registry
-  #       uses: docker/login-action@v1 
-  #       with:
-  #         registry: ghcr.io
-  #         username: ${{ github.repository_owner }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
- 
-  #     # Action reference: https://github.com/docker/build-push-action
-  #     - name: Build container
-  #       uses: docker/build-push-action@v2
-  #       with:
-  #         context: .
-  #         file: ./deploy/docker/Dockerfile
-  #         platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
-  #         ARGS: --build-arg GANESHA_VERSION=${GANESHA_VERSION}
-  #         push: true
-  #         # Use GANESHA_VERSION as the image tag
-  #         tags: ghcr.io/${{ github.repository_owner }}/nfs-provisioner:${GANESHA_VERSION}
