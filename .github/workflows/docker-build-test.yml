@@ -4,6 +4,10 @@
 # This test is meant to verify that our Dockerfile can build successfully when
 # changed on the CPU architectures we have made it support being built on.
 #
+# Set the GANESHA_VERSION environment variable to indicate the version of nfs-ganesha to use in the base container
+# And this is used to tag the container image for the nfs-ganesha (base) and nfs-provisioner (this last one is used to helm chart)
+# Get Ganesha versions from source: https://github.com/nfs-ganesha/nfs-ganesha/tags
+
 name: Docker build test
 
 on:
@@ -14,7 +18,7 @@ on:
   workflow_dispatch:
 
 env:
-  GANESHA_VERSION: 4.0.8
+  GANESHA_VERSION: V4.0.8
 
 jobs:
   build_test:
