@@ -1,10 +1,15 @@
 # This is a GitHub workflow defining a set of jobs with a set of steps.
 # ref: https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
 #
-# This test is meant to verify that our Dockerfile can build successfully when
-# changed on the CPU architectures we have made it support being built on.
+# This workflow builds the nfs-ganesha base container and nfs-provisioner container
 #
-name: Build nfs-ganesha base container
+# Set the GANESHA_VERSION environment variable to indicate the version of nfs-ganesha to use in the base container
+# And this is used to tag the container image for the nfs-ganesha (base) and nfs-provisioner (this last one is used to helm chart)
+# Both containers are pushed to the GitHub Container Registry
+#
+# Get Ganesha versions from source: https://github.com/nfs-ganesha/nfs-ganesha/tags
+
+name: Build nfs-ganesha base container and nfs-provisioner container
 
 on:
   # Trigger when path deploy/base/Dockerfile is changed or workflow is changed
@@ -13,18 +18,17 @@ on:
       - "deploy/base/Dockerfile"
       - ".github/workflows/docker-build.yml"
 
-# environment variables
 env:
   GANESHA_VERSION: V4.0.8
 
 jobs:
-  nfs-ganesha:
+  build-and-push:
+
     name: Build containers
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    # environment variables to be used in the job
 
     steps:
       - name: Checkout sources
