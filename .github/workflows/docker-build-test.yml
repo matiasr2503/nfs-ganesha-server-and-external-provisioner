@@ -4,25 +4,32 @@
 # This test is meant to verify that our Dockerfile can build successfully when
 # changed on the CPU architectures we have made it support being built on.
 #
+# Set the GANESHA_VERSION environment variable to indicate the version of nfs-ganesha to use in the base container
+# And this is used to tag the container image for the nfs-ganesha (base) and nfs-provisioner (this last one is used to helm chart)
+# Get Ganesha versions from source: https://github.com/nfs-ganesha/nfs-ganesha/tags
+
 name: Docker build test
 
 on:
   pull_request:
     paths:
       - "deploy/base/Dockerfile"
+      - "deploy/docker/Dockerfile"
       - ".github/workflows/docker-build-test.yml"
   workflow_dispatch:
 
+env:
+  GANESHA_VERSION: V4.0.8
+
 jobs:
-  build_dockerfile:
-    name: Build Dockerfile for ${{ matrix.platform }}
+  build_test:
+    name: Build Dockerfile testing
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-
     steps:
       - uses: actions/checkout@v2
-
+            
       # Action reference: https://github.com/docker/setup-qemu-action
       - name: Set up QEMU (for docker buildx)
         uses: docker/setup-qemu-action@v1
@@ -36,5 +43,16 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./deploy/base
+          ARGS: --build-arg GANESHA_VERSION=${{ env.GANESHA_VERSION }}
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
+          push: false
+          tags: ghcr.io/${{ github.repository_owner }}/nfs-ganesha:${{ env.GANESHA_VERSION }}
+
+      - name: Build nfs-provisioner container
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./deploy/docker/Dockerfile
+          ARGS: --build-arg GANESHA_VERSION=${{ env.GANESHA_VERSION }}
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           push: false

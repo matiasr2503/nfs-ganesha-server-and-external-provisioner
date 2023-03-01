@@ -15,11 +15,24 @@
 # Update only after new version of deploy/base/Dockerfile change has built
 ARG GANESHA_VERSION=V4.0.8
 
+# from go builder debian image to build nfs-provisioner
+FROM golang:1.16.3-buster as builder
 
+# install make
+RUN apt-get update && apt-get install -y make
+
+# copy source code
+COPY . /go/nfs-ganesha-server-and-external-provisioner
+
+# build nfs-provisioner
+RUN cd /go/nfs-ganesha-server-and-external-provisioner \
+    && make build
+
+# nfs-provisioner image
 FROM ghcr.io/kubernetes-sigs/nfs-ganesha:${GANESHA_VERSION}
 
-ARG binary=nfs-provisioner
-COPY ${binary} /nfs-provisioner
+# copy nfs-provisioner binary from builder image
+COPY --from=builder /go/nfs-ganesha-server-and-external-provisioner/bin/nfs-provisioner /nfs-provisioner
 
 # expose mountd 20048/tcp and nfsd 2049/tcp and rpcbind 111/tcp 111/udp
 EXPOSE 2049/tcp 20048/tcp 111/tcp 111/udp

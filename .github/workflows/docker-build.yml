@@ -1,28 +1,39 @@
 # This is a GitHub workflow defining a set of jobs with a set of steps.
 # ref: https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-syntax-for-github-actions
 #
-# This test is meant to verify that our Dockerfile can build successfully when
-# changed on the CPU architectures we have made it support being built on.
+# This workflow builds the nfs-ganesha base container and nfs-provisioner container
 #
-name: Build nfs-ganesha base container
+# Set the GANESHA_VERSION environment variable to indicate the version of nfs-ganesha to use in the base container
+# And this is used to tag the container image for the nfs-ganesha (base) and nfs-provisioner (this last one is used to helm chart)
+# Both containers are pushed to the GitHub Container Registry
+#
+# Get Ganesha versions from source: https://github.com/nfs-ganesha/nfs-ganesha/tags
+
+name: Build nfs-ganesha base container and nfs-provisioner container
 
 on:
   push:
     paths:
       - "deploy/base/Dockerfile"
+      - "deploy/docker/Dockerfile"
       - ".github/workflows/docker-build.yml"
 
+env:
+  GANESHA_VERSION: V4.0.8
+
 jobs:
-  docker:
-    name: Build nfs-ganesha base container
+  build-and-push:
+
+    name: Build containers
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
-
+      
       # Action reference: https://github.com/docker/setup-qemu-action
       - name: Set up QEMU (for docker buildx)
         uses: docker/setup-qemu-action@v1
@@ -40,11 +51,23 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
  
       # Action reference: https://github.com/docker/build-push-action
-      - name: Build container
+      - name: Build Ganesh container
         uses: docker/build-push-action@v2
         with:
           context: ./deploy/base
+          ARGS: --build-arg GANESHA_VERSION=${{ env.GANESHA_VERSION }}
           platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
           push: true
-          # keep tag in sync with deploy/base/Dockerfile:GANESHA_VERSION
-          tags: ghcr.io/${{ github.repository_owner }}/nfs-ganesha:V4.0.8
+          # Use the GANESHA_VERSION as the tag
+          tags: ghcr.io/${{ github.repository_owner }}/nfs-ganesha:${{ env.GANESHA_VERSION }}
+
+      - name: Build nfs-provisioner container
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./deploy/docker/Dockerfile
+          ARGS: --build-arg GANESHA_VERSION=${{ env.GANESHA_VERSION }}
+          platforms: linux/amd64,linux/arm64,linux/ppc64le,linux/s390x
+          push: true
+          # Use the GANESHA_VERSION as the tag
+          tags: ghcr.io/${{ github.repository_owner }}/nfs-provisioner:${{ env.GANESHA_VERSION }}
