@@ -12,10 +12,10 @@
 name: Build nfs-ganesha base container and nfs-provisioner container
 
 on:
-  # Trigger when path deploy/base/Dockerfile is changed or workflow is changed
   push:
     paths:
       - "deploy/base/Dockerfile"
+      - "deploy/docker/Dockerfile"
       - ".github/workflows/docker-build.yml"
 
 env:
@@ -33,15 +33,6 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
-
-      # use cache to speed up the build
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
       
       # Action reference: https://github.com/docker/setup-qemu-action
       - name: Set up QEMU (for docker buildx)
@@ -69,9 +60,6 @@ jobs:
           push: true
           # Use the GANESHA_VERSION as the tag
           tags: ghcr.io/${{ github.repository_owner }}/nfs-ganesha:${{ env.GANESHA_VERSION }}
-          # use the cache from the previous step
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Build nfs-provisioner container
         uses: docker/build-push-action@v2
@@ -83,6 +71,3 @@ jobs:
           push: true
           # Use the GANESHA_VERSION as the tag
           tags: ghcr.io/${{ github.repository_owner }}/nfs-provisioner:${{ env.GANESHA_VERSION }}
-          # use the cache from the previous step
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
